@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Dialogues — Belief Consensus Map</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#111827; --bg2:#1a2235; --border:#2a3a55; --text:#e8edf5;
+    --text-muted:#7a8aaa; --red:#c0392b; --orange:#e67e22; --green:#27ae60;
+    --no-data:#2a3345; --radius:8px;
+  }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif;
+    height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+  header { padding:14px 28px 12px; border-bottom:1px solid var(--border);
+    background:var(--bg2); flex-shrink:0; }
+  .header-top { display:flex; align-items:baseline; gap:16px; margin-bottom:6px; }
+  h1 { font-family:'DM Serif Display',serif; font-size:1.25rem; font-weight:400; }
+  .round-badge { font-size:0.72rem; font-weight:500; letter-spacing:0.08em;
+    text-transform:uppercase; color:#6abfb8;
+    background:rgba(42,157,148,0.12); border:1px solid rgba(42,157,148,0.25);
+    padding:3px 8px; border-radius:20px; }
+  .dropdown-wrap { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .dropdown-label { font-size:0.72rem; font-weight:500; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--text-muted); white-space:nowrap; }
+  select#question-select { flex:1; background:var(--bg); color:var(--text);
+    border:1px solid var(--border); border-radius:var(--radius);
+    padding:7px 12px; font-family:'DM Sans',sans-serif; font-size:0.875rem;
+    cursor:pointer; outline:none; transition:border-color 0.2s; max-width:780px; }
+  select#question-select:hover,select#question-select:focus { border-color:#2a9d94; }
+  select#question-select optgroup { color:#6abfb8; font-weight:500; }
+  select#question-select option { color:var(--text); background:#1a2235; }
+  /* Question subheading */
+  #question-subheading { font-size:0.82rem; color:var(--text); line-height:1.5;
+    font-style:italic; padding:6px 0 2px;
+    border-left:2px solid #e67e22; padding-left:10px; }
+  .subtitle { font-size:0.7rem; color:var(--text-muted); margin-top:5px; }
+  #map-container { flex:1; position:relative; overflow:hidden; }
+  svg#map { width:100%; height:100%; }
+  .country { stroke:#1e2d45; stroke-width:0.4px; }
+  .country.has-data { cursor:pointer; }
+  .country.has-data:hover { filter:brightness(1.2) drop-shadow(0 0 6px rgba(255,255,255,0.15)); }
+  .graticule { fill:none; stroke:#1e2d45; stroke-width:0.3px; }
+  .sphere { fill:#0d1520; }
+  #legend { flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    gap:12px; padding:9px 28px; border-top:1px solid var(--border); background:var(--bg2); }
+  .legend-label { font-size:0.72rem; font-weight:500; color:var(--text-muted); white-space:nowrap; }
+  .legend-label.positive { color:#27ae60; }
+  .legend-label.negative { color:#e07070; }
+  #legend-gradient { width:260px; height:10px; border-radius:5px;
+    background:linear-gradient(to right,#c0392b,#e67e22,#27ae60); }
+  .no-data-key { display:flex; align-items:center; gap:6px; margin-left:20px; }
+  .no-data-swatch { width:12px; height:12px; border-radius:2px;
+    background:var(--no-data); border:1px solid var(--border); }
+  footer { padding:5px 28px; background:var(--bg2); border-top:1px solid var(--border);
+    font-size:0.65rem; color:var(--text-muted); flex-shrink:0; }
+  footer a { color:#6abfb8; text-decoration:none; }
+  #tooltip { position:fixed; pointer-events:none; opacity:0; transition:opacity 0.15s;
+    z-index:100; background:#0d1826ee; border:1px solid var(--border);
+    border-radius:var(--radius); padding:12px 14px; min-width:220px; max-width:270px;
+    backdrop-filter:blur(8px); box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+  #tooltip.visible { opacity:1; }
+  .tt-country { font-family:'DM Serif Display',serif; font-size:1rem; margin-bottom:1px; }
+  .tt-meta { font-size:0.7rem; color:var(--text-muted); margin-bottom:9px; }
+  .tt-n { font-weight:600; color:var(--text); }
+  .tt-bar-bg { width:100%; height:6px; border-radius:3px;
+    background:rgba(255,255,255,0.08); overflow:hidden; margin-bottom:4px; }
+  .tt-bar-fill { height:100%; border-radius:3px; }
+  .tt-bar-pct { font-size:0.82rem; font-weight:600; margin-bottom:9px; color:var(--text); }
+  .tt-distribution { border-top:1px solid var(--border); padding-top:7px;
+    display:flex; flex-direction:column; gap:4px; }
+  .tt-row { display:flex; justify-content:space-between; font-size:0.72rem; }
+  .tt-row-label { color:var(--text-muted); }
+  .tt-row-val { color:var(--text); font-weight:500; }
+  .tt-no-data { font-size:0.8rem; color:var(--text-muted); font-style:italic; }
+  #loading { position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; background:var(--bg); font-size:0.85rem;
+    color:var(--text-muted); gap:10px; z-index:50; text-align:center; }
+  .spinner { width:18px; height:18px; border:2px solid var(--border);
+    border-top-color:#2a9d94; border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-top">
+    <h1>Global Dialogues — Belief Consensus Map</h1>
+    <span class="round-badge" id="round-badge">GD8</span>
+  </div>
+  <div class="dropdown-wrap">
+    <span class="dropdown-label">Question</span>
+    <select id="question-select"></select>
+  </div>
+  <div id="question-subheading"></div>
+  <div class="subtitle" id="subtitle"></div>
+</header>
+
+<div id="map-container">
+  <div id="loading"><div class="spinner"></div> Loading map data…</div>
+  <svg id="map"></svg>
+</div>
+
+<div id="legend">
+  <span class="legend-label negative" id="legend-neg">Disagree</span>
+  <div id="legend-gradient"></div>
+  <span class="legend-label positive" id="legend-pos">Agree</span>
+  <div class="no-data-key">
+    <div class="no-data-swatch"></div>
+    <span class="legend-label">No data</span>
+  </div>
+</div>
+
+<footer>
+  Data: <a href="https://www.cip.org" target="_blank">Collective Intelligence Project</a>
+  · Global Dialogues ·
+  <a href="https://github.com/collect-intel/global-dialogues" target="_blank">github.com/collect-intel/global-dialogues</a>
+</footer>
+
+<div id="tooltip"></div>
+
+<script>
+// Red → Orange → Green diverging scale
+function fullScale(t) {
+  if (t <= 0.5) return d3.interpolateHcl("#c0392b","#e67e22")(t * 2);
+  return d3.interpolateHcl("#e67e22","#27ae60")((t - 0.5) * 2);
+}
+
+// Numeric ISO -> alpha-3
+const N2A = {"004":"AFG","008":"ALB","012":"DZA","020":"AND","024":"AGO","028":"ATG","032":"ARG","051":"ARM","036":"AUS","040":"AUT","031":"AZE","044":"BHS","048":"BHR","050":"BGD","052":"BRB","112":"BLR","056":"BEL","084":"BLZ","204":"BEN","064":"BTN","068":"BOL","070":"BIH","072":"BWA","076":"BRA","096":"BRN","100":"BGR","854":"BFA","108":"BDI","116":"KHM","120":"CMR","124":"CAN","132":"CPV","140":"CAF","148":"TCD","152":"CHL","156":"CHN","170":"COL","174":"COM","178":"COG","180":"COD","188":"CRI","191":"HRV","192":"CUB","196":"CYP","203":"CZE","208":"DNK","262":"DJI","212":"DMA","214":"DOM","626":"TLS","218":"ECU","818":"EGY","222":"SLV","226":"GNQ","232":"ERI","233":"EST","231":"ETH","242":"FJI","246":"FIN","250":"FRA","266":"GAB","270":"GMB","268":"GEO","276":"DEU","288":"GHA","300":"GRC","308":"GRD","320":"GTM","324":"GIN","624":"GNB","328":"GUY","332":"HTI","340":"HND","348":"HUN","352":"ISL","356":"IND","360":"IDN","364":"IRN","368":"IRQ","372":"IRL","376":"ISR","380":"ITA","384":"CIV","388":"JAM","392":"JPN","400":"JOR","398":"KAZ","404":"KEN","296":"KIR","408":"PRK","410":"KOR","414":"KWT","417":"KGZ","418":"LAO","428":"LVA","422":"LBN","426":"LSO","430":"LBR","434":"LBY","438":"LIE","440":"LTU","442":"LUX","807":"MKD","450":"MDG","454":"MWI","458":"MYS","462":"MDV","466":"MLI","470":"MLT","584":"MHL","478":"MRT","480":"MUS","484":"MEX","583":"FSM","498":"MDA","492":"MCO","496":"MNG","499":"MNE","504":"MAR","508":"MOZ","104":"MMR","516":"NAM","520":"NRU","524":"NPL","528":"NLD","554":"NZL","558":"NIC","562":"NER","566":"NGA","578":"NOR","512":"OMN","586":"PAK","585":"PLW","275":"PSE","591":"PAN","598":"PNG","600":"PRY","604":"PER","608":"PHL","616":"POL","620":"PRT","634":"QAT","642":"ROU","643":"RUS","646":"RWA","670":"VCT","882":"WSM","674":"SMR","678":"STP","682":"SAU","686":"SEN","688":"SRB","690":"SYC","694":"SLE","702":"SGP","703":"SVK","705":"SVN","090":"SLB","706":"SOM","710":"ZAF","728":"SSD","724":"ESP","144":"LKA","659":"KNA","662":"LCA","729":"SDN","740":"SUR","748":"SWZ","752":"SWE","756":"CHE","760":"SYR","158":"TWN","762":"TJK","834":"TZA","764":"THA","768":"TGO","776":"TON","780":"TTO","788":"TUN","795":"TKM","798":"TUV","792":"TUR","800":"UGA","804":"UKR","784":"ARE","826":"GBR","840":"USA","858":"URY","860":"UZB","548":"VUT","336":"VAT","862":"VEN","704":"VNM","887":"YEM","894":"ZMB","716":"ZWE"};
+
+function isoFromFeature(d) {
+  return N2A[String(d.id).padStart(3,"0")] || null;
+}
+
+let appData = null, currentQ = null;
+
+Promise.all([
+  fetch("data.json").then(r => { if (!r.ok) throw new Error("data.json not found — run setup.py first"); return r.json(); }),
+  fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(r => r.json()),
+]).then(([data, world]) => {
+  appData = data;
+  document.getElementById("round-badge").textContent = data.round;
+  buildDropdown(data.questions);
+  buildMap(world);
+  selectQuestion(data.questions[0]);
+  document.getElementById("loading").style.display = "none";
+}).catch(err => {
+  document.getElementById("loading").innerHTML =
+    `<div style="max-width:420px;line-height:1.6">
+      <div style="color:#e07070;font-size:1rem;margin-bottom:8px">⚠ Could not load data</div>
+      <div>${err.message}</div>
+      <div style="margin-top:10px;font-size:0.8rem">
+        Run: <code style="background:#1a2235;padding:2px 6px;border-radius:4px">python setup.py</code>
+        then serve via <code style="background:#1a2235;padding:2px 6px;border-radius:4px">python -m http.server 8000</code>
+      </div>
+    </div>`;
+});
+
+function buildDropdown(questions) {
+  const sel = document.getElementById("question-select");
+  const groups = {};
+  questions.forEach(q => {
+    const cat = q.category_label || "Other";
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(q);
+  });
+  Object.entries(groups).forEach(([label, qs]) => {
+    const og = document.createElement("optgroup");
+    og.label = label;
+    qs.forEach(q => {
+      const opt = document.createElement("option");
+      opt.value = q.id;
+      opt.textContent = q.text;
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+  });
+  sel.addEventListener("change", () => {
+    const q = appData.questions.find(q => q.id === sel.value);
+    if (q) selectQuestion(q);
+  });
+}
+
+function buildMap(world) {
+  const cont = document.getElementById("map-container");
+  const svg  = d3.select("#map");
+  const W = cont.clientWidth, H = cont.clientHeight;
+
+  let proj = d3.geoNaturalEarth1().scale(W/6.3).translate([W/2, H/2]);
+  let pathGen = d3.geoPath().projection(proj);
+
+  svg.append("path").datum({type:"Sphere"}).attr("class","sphere").attr("d",pathGen);
+  svg.append("path").datum(d3.geoGraticule()()).attr("class","graticule").attr("d",pathGen);
+
+  const countries = topojson.feature(world, world.objects.countries);
+  svg.selectAll(".country")
+    .data(countries.features).join("path")
+    .attr("class","country").attr("d",pathGen)
+    .on("mousemove", onMouseMove)
+    .on("mouseleave", onMouseLeave);
+
+  window.addEventListener("resize", () => {
+    const W2 = cont.clientWidth, H2 = cont.clientHeight;
+    proj.scale(W2/6.3).translate([W2/2, H2/2]);
+    pathGen = d3.geoPath().projection(proj);
+    svg.select(".sphere").attr("d", pathGen({type:"Sphere"}));
+    svg.select(".graticule").attr("d", pathGen(d3.geoGraticule()()));
+    svg.selectAll(".country").attr("d", pathGen);
+  });
+}
+
+function selectQuestion(q) {
+  currentQ = q;
+
+  // Update legend labels
+  document.getElementById("legend-neg").textContent = q.disagree_label;
+  document.getElementById("legend-pos").textContent = q.agree_label;
+
+  // Update subheading with full question text
+  document.getElementById("question-subheading").textContent = q.text;
+
+  // Update subtitle
+  const n = Object.keys(q.countries).length;
+  document.getElementById("subtitle").textContent =
+    `${n} countries with data  ·  ${q.category_label}`;
+
+  const lookup = {};
+  Object.entries(q.countries).forEach(([iso,d]) => lookup[iso] = d.agree_rate);
+
+  d3.selectAll(".country")
+    .transition().duration(400)
+    .attr("fill", d => {
+      const iso = isoFromFeature(d);
+      return (iso && lookup[iso] !== undefined) ? fullScale(lookup[iso]) : "var(--no-data)";
+    })
+    .each(function(d) {
+      const iso = isoFromFeature(d);
+      const has = iso && lookup[iso] !== undefined;
+      d3.select(this).classed("has-data", has).classed("no-data", !has);
+    });
+}
+
+const tooltip = document.getElementById("tooltip");
+
+function onMouseMove(event, d) {
+  if (!currentQ) return;
+  const iso = isoFromFeature(d);
+  const cd  = iso ? currentQ.countries[iso] : null;
+  let html  = "";
+
+  if (cd) {
+    const pct = Math.round(cd.agree_rate * 100);
+    const col = fullScale(cd.agree_rate);
+    const nStr = cd.n != null ? `n = ${cd.n} respondents` : "";
+    html = `
+      <div class="tt-country">${cd.country_name}</div>
+      <div class="tt-meta">${nStr ? `<span class="tt-n">${nStr}</span> · ` : ""}GD${appData.round.replace("GD","")}</div>
+      <div class="tt-bar-bg">
+        <div class="tt-bar-fill" style="width:${pct}%;background:${col}"></div>
+      </div>
+      <div class="tt-bar-pct">${pct}% ${currentQ.agree_label.toLowerCase()}</div>
+      <div class="tt-distribution">
+        ${Object.entries(cd.distribution).map(([l,v]) =>
+          `<div class="tt-row">
+            <span class="tt-row-label">${l}</span>
+            <span class="tt-row-val">${(v*100).toFixed(1)}%</span>
+          </div>`
+        ).join("")}
+      </div>`;
+  } else {
+    html = `<div class="tt-country" style="font-size:0.9rem">${cd ? cd.country_name : (iso || "Unknown region")}</div>
+            <div class="tt-no-data">No data for this question</div>`;
+  }
+
+  tooltip.innerHTML = html;
+  tooltip.classList.add("visible");
+  const tw = tooltip.offsetWidth, th = tooltip.offsetHeight, pad = 16;
+  let x = event.clientX + pad, y = event.clientY + pad;
+  if (x + tw > window.innerWidth  - pad) x = event.clientX - tw - pad;
+  if (y + th > window.innerHeight - pad) y = event.clientY - th - pad;
+  tooltip.style.left = x+"px"; tooltip.style.top = y+"px";
+}
+
+function onMouseLeave() { tooltip.classList.remove("visible"); }
+</script>
+</body>
+</html>
