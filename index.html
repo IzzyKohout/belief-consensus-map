@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Global Dialogues — Belief Consensus Map</title>
+<title>Global Dialogues — AI Belief Consensus Map</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -88,7 +88,7 @@
 <body>
 <header>
   <div class="header-top">
-    <h1>Global Dialogues — Belief Consensus Map</h1>
+    <h1>Global Dialogues — AI Belief Consensus Map</h1>
     <span class="round-badge" id="round-badge">GD8</span>
   </div>
   <div class="dropdown-wrap">
@@ -174,7 +174,7 @@ function buildDropdown(questions) {
     qs.forEach(q => {
       const opt = document.createElement("option");
       opt.value = q.id;
-      opt.textContent = q.text;
+      opt.textContent = q.short_label || q.text;
       og.appendChild(opt);
     });
     sel.appendChild(og);
@@ -256,15 +256,20 @@ function onMouseMove(event, d) {
     const pct = Math.round(cd.agree_rate * 100);
     const col = fullScale(cd.agree_rate);
     const nStr = cd.n != null ? `n = ${cd.n} respondents` : "";
+    // Find dominant response
+    const dominant = Object.entries(cd.distribution)
+      .sort((a,b) => b[1]-a[1])[0];
+    const dominantLabel = dominant[0];
+    const dominantPct = Math.round(dominant[1]*100);
     html = `
       <div class="tt-country">${cd.country_name}</div>
       <div class="tt-meta">${nStr ? `<span class="tt-n">${nStr}</span> · ` : ""}GD${appData.round.replace("GD","")}</div>
       <div class="tt-bar-bg">
         <div class="tt-bar-fill" style="width:${pct}%;background:${col}"></div>
       </div>
-      <div class="tt-bar-pct">${pct}% ${currentQ.agree_label.toLowerCase()}</div>
+      <div class="tt-bar-pct">Most common: ${dominantLabel} (${dominantPct}%)</div>
       <div class="tt-distribution">
-        ${Object.entries(cd.distribution).map(([l,v]) =>
+        ${Object.entries(cd.distribution).sort((a,b) => b[1]-a[1]).map(([l,v]) =>
           `<div class="tt-row">
             <span class="tt-row-label">${l}</span>
             <span class="tt-row-val">${(v*100).toFixed(1)}%</span>
