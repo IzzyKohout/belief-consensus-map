@@ -44,6 +44,19 @@
   .country { stroke:#1e2d45; stroke-width:0.4px; }
   .country.has-data { cursor:pointer; }
   .country.has-data:hover { filter:brightness(1.2) drop-shadow(0 0 6px rgba(255,255,255,0.15)); }
+  @media (max-width: 768px) {
+    header { padding:10px 14px 8px; }
+    h1 { font-size:1rem; }
+    .dropdown-wrap { flex-direction:column; align-items:stretch; gap:6px; }
+    .dropdown-label { display:none; }
+    select#question-select { max-width:100%; font-size:0.8rem; padding:6px 10px; }
+    #question-subheading { font-size:0.75rem; }
+    #legend { padding:8px 14px; gap:8px; }
+    #legend-gradient { width:160px; }
+    .legend-label { font-size:0.65rem; }
+    footer { display:none; }
+    #tooltip { max-width:220px; min-width:180px; font-size:0.85rem; }
+  }
   .graticule { fill:none; stroke:#1e2d45; stroke-width:0.3px; }
   .sphere { fill:#0d1520; }
   #legend { flex-shrink:0; display:flex; align-items:center; justify-content:center;
@@ -201,7 +214,9 @@ function buildMap(world) {
     .data(countries.features).join("path")
     .attr("class","country").attr("d",pathGen)
     .on("mousemove", onMouseMove)
-    .on("mouseleave", onMouseLeave);
+    .on("mouseleave", onMouseLeave)
+    .on("touchstart", onTouchStart)
+    .on("touchend", onMouseLeave);
 
   window.addEventListener("resize", () => {
     const W2 = cont.clientWidth, H2 = cont.clientHeight;
@@ -288,6 +303,17 @@ function onMouseMove(event, d) {
   if (x + tw > window.innerWidth  - pad) x = event.clientX - tw - pad;
   if (y + th > window.innerHeight - pad) y = event.clientY - th - pad;
   tooltip.style.left = x+"px"; tooltip.style.top = y+"px";
+}
+
+function onTouchStart(event, d) {
+  event.preventDefault && event.preventDefault();
+  // Use centre of bounding box as position for tooltip
+  const bbox = this.getBoundingClientRect();
+  const fakeEvent = {
+    clientX: bbox.left + bbox.width / 2,
+    clientY: bbox.top + bbox.height / 2
+  };
+  onMouseMove(fakeEvent, d);
 }
 
 function onMouseLeave() { tooltip.classList.remove("visible"); }
