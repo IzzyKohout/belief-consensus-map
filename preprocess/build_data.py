@@ -19,125 +19,107 @@ import pandas as pd
 
 INDICATOR_QUESTIONS = [
     ("Overall, would you say the increased use of artificial intelligence (AI) in daily life makes you feel\u2026",
-     "ai_feeling_excited_concerned", "AI Perception", "excited_concerned"),
+     "ai_feeling_excited_concerned", "AI Perception", "excited_concerned", "Overall feeling about AI in daily life"),
     ("Thinking about the last three months, how often, if at all, have you noticed AI systems in your daily life?",
-     "ai_notice_frequency", "AI Exposure", "frequency"),
+     "ai_notice_frequency", "AI Exposure", "frequency", "Frequency of noticing AI systems"),
     ("Thinking about the last three months, how often, if at all, have you noticed human interactions which have been replaced with automated systems?",
-     "automation_notice_frequency", "AI Exposure", "frequency"),
+     "automation_notice_frequency", "AI Exposure", "frequency", "Frequency of noticing automation replacing humans"),
     ("Thinking about the last three months, how often, if at all, have you been expected to use an AI system at work?",
-     "ai_use_work_expected_freq", "AI Use", "frequency"),
+     "ai_use_work_expected_freq", "AI Use", "frequency", "Expected AI use at work"),
     ("Thinking about the last three months, how often, if at all, have you personally chosen to use an AI system at work?",
-     "ai_use_work_chosen_freq", "AI Use", "frequency"),
+     "ai_use_work_chosen_freq", "AI Use", "frequency", "Chosen AI use at work"),
     ("Thinking about the last three months, how often, if at all, have you personally chosen to use an AI system in your personal life?",
-     "ai_use_personal_chosen_freq", "AI Use", "frequency"),
+     "ai_use_personal_chosen_freq", "AI Use", "frequency", "Chosen AI use in personal life"),
     ("Thinking about the last three months, how often, if at all, have you interacted with AI systems to get advice on a sensitive personal issue or to get emotional support?",
-     "ai_use_sensitive_advice_freq", "AI Use", "frequency"),
+     "ai_use_sensitive_advice_freq", "AI Use", "frequency", "AI use for emotional support or sensitive advice"),
     ("Thinking about the last three months, how often, if at all, have you interacted with AI systems to complete an action in the real world on your behalf without your supervision?",
-     "ai_use_real_world_action_freq", "AI Use", "frequency"),
-    ("Considering both potential benefits and risks, how do you assess the overall impact on society of messaging apps?",
-     "impact_society_msg_apps", "Societal Impact Assessment", "benefits_risks"),
-    ("Considering both potential benefits and risks, how do you assess the overall impact on society of social media apps?",
-     "impact_society_social_media", "Societal Impact Assessment", "benefits_risks"),
+     "ai_use_real_world_action_freq", "AI Use", "frequency", "AI use for unsupervised real-world actions"),
     ("Considering both potential benefits and risks, how do you assess the overall impact on society of AI chatbots?",
-     "impact_society_ai_chatbots", "Societal Impact Assessment", "benefits_risks"),
+     "impact_society_ai_chatbots", "Societal Impact Assessment", "benefits_risks", "Perceived societal impact of AI chatbots"),
     ("Considering both potential benefits and risks, how do you assess the overall impact on society of AI systems that can perform tasks in the real world without human supervision?",
-     "impact_society_ai_unsupervised", "Societal Impact Assessment", "benefits_risks"),
+     "impact_society_ai_unsupervised", "Societal Impact Assessment", "benefits_risks", "Perceived societal impact of unsupervised AI"),
     ("Considering both potential benefits and risks, how do you assess the overall impact on society of AI systems that can outperform humans on most economically valuable work?",
-     "impact_society_ai_outperform", "Societal Impact Assessment", "benefits_risks"),
-    ("To what extent, if at all, do you generally trust governments to do what is right?",
-     "trust_govt", "Trust in Institutions", "trust"),
-    ("To what extent, if at all, do you generally trust small businesses to do what is right?",
-     "trust_smb", "Trust in Institutions", "trust"),
-    ("To what extent, if at all, do you generally trust large corporations to do what is right?",
-     "trust_large_corp", "Trust in Institutions", "trust"),
+     "impact_society_ai_outperform", "Societal Impact Assessment", "benefits_risks", "Perceived societal impact of AI outperforming humans"),
     ("To what extent, if at all, do you generally trust social media companies to do what is right?",
-     "trust_social_media_co", "Trust in Institutions", "trust"),
+     "trust_social_media_co", "Trust in Institutions", "trust", "Trust in social media companies"),
     ("To what extent, if at all, do you generally trust companies building AI to do what is right?",
-     "trust_ai_co", "Trust in Institutions", "trust"),
-    ("To what extent, if at all, do you generally trust public utility companies to do what is right?",
-     "trust_utility_co", "Trust in Institutions", "trust"),
+     "trust_ai_co", "Trust in Institutions", "trust", "Trust in AI companies"),
     ("To what extent, if at all, do you generally trust public research institutions to do what is right?",
-     "trust_research_inst", "Trust in Institutions", "trust"),
-    ("To what extent, if at all, do you trust your family doctor to act in your best interest?",
-     "trust_personal_doctor", "Trust in Specific Actors", "trust"),
-    ("To what extent, if at all, do you trust your social media feed (eg TikTok, Facebook) to act in your best interest?",
-     "trust_personal_sm_feed", "Trust in Specific Actors", "trust"),
-    ("To what extent, if at all, do you trust your elected representatives to act in your best interest?",
-     "trust_personal_elected_reps", "Trust in Specific Actors", "trust"),
-    ("To what extent, if at all, do you trust your faith or community leader to act in your best interest?",
-     "trust_personal_faith_leader", "Trust in Specific Actors", "trust"),
-    ("To what extent, if at all, do you trust the civil servants in your government to act in your best interest?",
-     "trust_personal_civil_servants", "Trust in Specific Actors", "trust"),
+     "trust_research_inst", "Trust in Institutions", "trust", "Trust in public research institutions"),
     ("To what extent, if at all, do you trust your AI chatbot (eg ChatGPT) to act in your best interest?",
-     "trust_personal_ai_chatbot", "Trust in Specific Actors", "trust"),
+     "trust_personal_ai_chatbot", "Trust in Specific Actors", "trust", "Personal trust in AI chatbot"),
     ("Do you agree or disagree with this statement? AI could make better decisions on my behalf than my government representatives.",
-     "ai_vs_govt_decisions", "AI Governance", "agree_disagree_unsure"),
+     "ai_vs_govt_decisions", "AI Governance", "agree_disagree_unsure", "AI vs government decision-making"),
     ("Do you think the increased use of AI across society is likely to make your cost of living better, worse or stay the same in the next 10 years?",
-     "ai_impact_future_cost_living", "Future Impact — Personal", "impact"),
+     "ai_impact_future_cost_living", "Future Impact — Personal", "impact", "AI impact on cost of living"),
     ("Do you think the increased use of AI across society is likely to make the amount of free time you have better, worse or stay the same in the next 10 years?",
-     "ai_impact_future_free_time", "Future Impact — Personal", "impact"),
+     "ai_impact_future_free_time", "Future Impact — Personal", "impact", "AI impact on free time"),
     ("Do you think the increased use of AI across society is likely to make your community's well-being better, worse or stay the same in the next 10 years?",
-     "ai_impact_future_community", "Future Impact — Societal", "impact"),
+     "ai_impact_future_community", "Future Impact — Societal", "impact", "AI impact on community well-being"),
     ("Do you think the increased use of AI across society is likely to make the availability of good jobs better, worse or stay the same in the next 10 years?",
-     "ai_impact_future_jobs", "Future Impact — Societal", "impact"),
+     "ai_impact_future_jobs", "Future Impact — Societal", "impact", "AI impact on job availability"),
     ("Do you think the increased use of AI across society is likely to make your sense of purpose better, worse or stay the same in the next 10 years?",
-     "ai_impact_future_purpose", "Future Impact — Personal", "impact"),
+     "ai_impact_future_purpose", "Future Impact — Personal", "impact", "AI impact on sense of purpose"),
     ("So far, what has been the overall impact of AI on your daily life?",
-     "ai_impact_current_daily_life", "Current AI Impact", "impact"),
-    ("Is your job making a meaningful contribution to the world?",
-     "job_meaningful", "Work & Automation", "yes_no"),
+     "ai_impact_current_daily_life", "Current AI Impact", "impact", "Current AI impact on daily life"),
     ("Do you think your job is likely to be automated in the next 10 years?",
-     "job_automation_risk", "Work & Automation", "yes_no"),
+     "job_automation_risk", "Work & Automation", "yes_no", "Likelihood of job automation"),
     ("Do you think your job should be automated in the next 10 years?",
-     "job_automation_desire", "Work & Automation", "yes_no"),
+     "job_automation_desire", "Work & Automation", "yes_no", "Desire for job automation"),
     ("So far, how has your community been affected by job loss from automation?",
-     "community_automation_impact", "Work & Automation", "automation_impact"),
+     "community_automation_impact", "Work & Automation", "automation_impact", "Community impact of automation job loss"),
 ]
 
 # ── Scale type definitions ────────────────────────────────────────────────────
 
 SCALE_CONFIGS = {
     "trust": {
-        "positive":       ["Somewhat Trust", "Strongly Trust"],
+        "positions":      {"Strongly Distrust": 0.0, "Somewhat Distrust": 0.25,
+                           "Neither Trust Nor Distrust": 0.5, "Somewhat Trust": 0.75, "Strongly Trust": 1.0},
         "agree_label":    "Trust",
         "disagree_label": "Distrust",
     },
     "benefits_risks": {
-        "positive":       ["Benefits slightly outweigh risks", "Benefits far outweigh risks"],
+        "positions":      {"Risks far outweigh benefits": 0.0, "Risks slightly outweigh benefits": 0.25,
+                           "Risks and benefits are equal": 0.5, "Benefits slightly outweigh risks": 0.75,
+                           "Benefits far outweigh risks": 1.0},
         "agree_label":    "Benefits outweigh risks",
         "disagree_label": "Risks outweigh benefits",
     },
     "impact": {
-        "positive":       ["Noticeably Better", "Profoundly Better"],
+        "positions":      {"Profoundly Worse": 0.0, "Noticeably Worse": 0.25,
+                           "No Major Change": 0.5, "Noticeably Better": 0.75, "Profoundly Better": 1.0},
         "agree_label":    "Better",
         "disagree_label": "Worse",
     },
     "frequency": {
-        "positive":       ["daily", "weekly"],
+        "positions":      {"never": 0.0, "annually": 0.25,
+                           "monthly": 0.5, "weekly": 0.75, "daily": 1.0},
         "agree_label":    "Frequently (daily/weekly)",
         "disagree_label": "Rarely/Never",
     },
     "excited_concerned": {
-        "positive":       ["More excited than concerned"],
+        "positions":      {"More concerned than excited": 0.0,
+                           "Equally concerned and excited": 0.5,
+                           "More excited than concerned": 1.0},
         "agree_label":    "More excited",
         "disagree_label": "More concerned",
     },
     "agree_disagree_unsure": {
-        "positive":       ["Agree"],
+        "positions":      {"Disagree": 0.0, "Unsure": 0.5, "Agree": 1.0},
         "agree_label":    "Agree",
         "disagree_label": "Disagree",
     },
     "yes_no": {
-        "positive":       ["Yes"],
+        "positions":      {"No": 0.0, "Don't Know": 0.5, "Yes": 1.0},
         "agree_label":    "Yes",
         "disagree_label": "No",
     },
     "automation_impact": {
-        "positive":       [
-            "I know someone who has lost their job",
-            "I know several people who have lost their job",
-            "I know many people who have lost their job",
-        ],
+        "positions":      {"Not at all": 0.0,
+                           "I know someone who has lost their job": 0.33,
+                           "I know several people who have lost their job": 0.67,
+                           "I know many people who have lost their job": 1.0},
         "agree_label":    "Knows someone affected",
         "disagree_label": "Not affected",
     },
@@ -180,17 +162,22 @@ def get_country_columns(df: pd.DataFrame) -> list:
 
 
 def compute_agree_rate(distribution: dict, scale_type: str) -> float | None:
+    """Weighted average position across response options (0=negative, 1=positive)."""
     config = SCALE_CONFIGS.get(scale_type)
     if not config:
         return None
+    positions = config["positions"]
     total = sum(distribution.values())
     if total == 0:
         return None
-    positive_sum = sum(distribution.get(opt, 0) for opt in config["positive"])
-    return round(positive_sum / total, 4)
+    weighted_sum = sum(
+        positions.get(response, 0.5) * proportion
+        for response, proportion in distribution.items()
+    )
+    return round(weighted_sum / total, 4)
 
 
-def process_question(q_text: str, q_code: str, category: str, scale_type: str,
+def process_question(q_text: str, q_code: str, category: str, scale_type: str, short_label: str,
                      agg_df: pd.DataFrame, country_cols: list,
                      country_map: dict, counts_df: pd.DataFrame = None) -> dict | None:
 
@@ -261,6 +248,7 @@ def process_question(q_text: str, q_code: str, category: str, scale_type: str,
     return {
         "id":               q_code,
         "text":             q_text,
+        "short_label":      short_label,
         "category_label":   category,
         "scale_name":       scale_type,
         "agree_label":      config["agree_label"],
@@ -284,9 +272,9 @@ def build_data(gd_path: Path, round_num: int, output_path: Path,
     questions = []
     skipped   = 0
 
-    for (q_text, q_code, category, scale_type) in INDICATOR_QUESTIONS:
+    for (q_text, q_code, category, scale_type, short_label) in INDICATOR_QUESTIONS:
         q_data = process_question(
-            q_text, q_code, category, scale_type,
+            q_text, q_code, category, scale_type, short_label,
             agg_df, country_cols, country_map, counts_df
         )
         if q_data and q_data["countries"]:

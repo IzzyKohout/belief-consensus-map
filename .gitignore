@@ -2,4 +2,4 @@ global-dialogues/
 app/data.json
 __pycache__/
 *.pyc
-.DS_Store
+.DS_Store # leave existing ignores
