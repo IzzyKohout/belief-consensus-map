@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Global Dialogues — AI Belief Consensus Map</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
@@ -51,16 +51,16 @@
     .dropdown-label { display:none; }
     select#question-select { max-width:100%; font-size:0.8rem; padding:6px 10px; }
     #question-subheading { font-size:0.75rem; }
-    #legend { padding:6px 10px; gap:4px; flex-wrap:nowrap; justify-content:center; overflow:hidden; }
+    #legend { padding:6px 16px; padding-bottom:calc(10px + env(safe-area-inset-bottom)); gap:4px; flex-wrap:nowrap; justify-content:center; }
     #legend-gradient { width:80px; height:8px; flex-shrink:0; }
-    .legend-label { font-size:0.58rem; white-space:nowrap; }
+    .legend-label { font-size:0.58rem; white-space:nowrap; overflow:visible; }
     .no-data-key { margin-left:4px; }
     footer { display:none; }
     #tooltip {
       position:fixed;
       left:50% !important;
       top:auto !important;
-      bottom:80px !important;
+      bottom:calc(80px + env(safe-area-inset-bottom)) !important;
       transform:translateX(-50%);
       max-width:calc(100vw - 32px);
       min-width:0;
