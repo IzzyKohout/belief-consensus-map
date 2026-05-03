@@ -51,10 +51,11 @@
     .dropdown-label { display:none; }
     select#question-select { max-width:100%; font-size:0.8rem; padding:6px 10px; }
     #question-subheading { font-size:0.75rem; }
-    #legend { padding:6px 16px; padding-bottom:calc(10px + env(safe-area-inset-bottom)); gap:4px; flex-wrap:nowrap; justify-content:center; }
-    #legend-gradient { width:80px; height:8px; flex-shrink:0; }
-    .legend-label { font-size:0.58rem; white-space:nowrap; overflow:visible; }
-    .no-data-key { margin-left:4px; }
+    #legend { padding:6px 16px; padding-bottom:calc(10px + env(safe-area-inset-bottom)); gap:6px; flex-direction:column; align-items:center; }
+    #legend-gradient { width:calc(100vw - 80px); max-width:280px; height:8px; flex-shrink:0; }
+    .legend-label { font-size:0.65rem; white-space:nowrap; }
+    .no-data-key { margin-left:0; }
+    .legend-row { display:flex; align-items:center; gap:8px; width:100%; max-width:280px; justify-content:space-between; }
     footer { display:none; }
     #tooltip {
       position:fixed;
@@ -129,9 +130,11 @@
 </div>
 
 <div id="legend">
-  <span class="legend-label negative" id="legend-neg">Disagree</span>
-  <div id="legend-gradient"></div>
-  <span class="legend-label positive" id="legend-pos">Agree</span>
+  <div class="legend-row">
+    <span class="legend-label negative" id="legend-neg">Disagree</span>
+    <div id="legend-gradient"></div>
+    <span class="legend-label positive" id="legend-pos">Agree</span>
+  </div>
   <div class="no-data-key">
     <div class="no-data-swatch"></div>
     <span class="legend-label">No data</span>
