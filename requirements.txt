@@ -1,0 +1,7 @@
+# Core data processing
+pandas>=2.0
+numpy>=1.24
+
+# No other runtime dependencies — the frontend uses CDN-loaded D3/TopoJSON
+# Dev/optional
+# pytest  # if you want to add tests later
