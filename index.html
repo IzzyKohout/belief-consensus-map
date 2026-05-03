@@ -51,11 +51,22 @@
     .dropdown-label { display:none; }
     select#question-select { max-width:100%; font-size:0.8rem; padding:6px 10px; }
     #question-subheading { font-size:0.75rem; }
-    #legend { padding:8px 14px; gap:8px; }
-    #legend-gradient { width:160px; }
-    .legend-label { font-size:0.65rem; }
+    #legend { padding:6px 10px; gap:6px; flex-wrap:wrap; justify-content:center; }
+    #legend-gradient { width:120px; height:8px; }
+    .legend-label { font-size:0.6rem; }
+    .no-data-key { margin-left:6px; }
     footer { display:none; }
-    #tooltip { max-width:220px; min-width:180px; font-size:0.85rem; }
+    #tooltip {
+      position:fixed;
+      left:50% !important;
+      top:auto !important;
+      bottom:80px !important;
+      transform:translateX(-50%);
+      max-width:calc(100vw - 32px);
+      min-width:0;
+      width:calc(100vw - 32px);
+      font-size:0.8rem;
+    }
   }
   .graticule { fill:none; stroke:#1e2d45; stroke-width:0.3px; }
   .sphere { fill:#0d1520; }
@@ -203,7 +214,8 @@ function buildMap(world) {
   const svg  = d3.select("#map");
   const W = cont.clientWidth, H = cont.clientHeight;
 
-  let proj = d3.geoNaturalEarth1().scale(W/6.3).translate([W/2, H/2]);
+  const isMobile = W < 768;
+  let proj = d3.geoNaturalEarth1().scale(isMobile ? W/4.5 : W/6.3).translate([W/2, H/2]);
   let pathGen = d3.geoPath().projection(proj);
 
   svg.append("path").datum({type:"Sphere"}).attr("class","sphere").attr("d",pathGen);
@@ -220,7 +232,7 @@ function buildMap(world) {
 
   window.addEventListener("resize", () => {
     const W2 = cont.clientWidth, H2 = cont.clientHeight;
-    proj.scale(W2/6.3).translate([W2/2, H2/2]);
+    proj.scale(W2 < 768 ? W2/4.5 : W2/6.3).translate([W2/2, H2/2]);
     pathGen = d3.geoPath().projection(proj);
     svg.select(".sphere").attr("d", pathGen({type:"Sphere"}));
     svg.select(".graticule").attr("d", pathGen(d3.geoGraticule()()));
@@ -298,11 +310,17 @@ function onMouseMove(event, d) {
 
   tooltip.innerHTML = html;
   tooltip.classList.add("visible");
-  const tw = tooltip.offsetWidth, th = tooltip.offsetHeight, pad = 16;
-  let x = event.clientX + pad, y = event.clientY + pad;
-  if (x + tw > window.innerWidth  - pad) x = event.clientX - tw - pad;
-  if (y + th > window.innerHeight - pad) y = event.clientY - th - pad;
-  tooltip.style.left = x+"px"; tooltip.style.top = y+"px";
+  if (window.innerWidth <= 768) {
+    // On mobile, tooltip is positioned via CSS (bottom centre) — no JS needed
+    tooltip.style.left = "";
+    tooltip.style.top = "";
+  } else {
+    const tw = tooltip.offsetWidth, th = tooltip.offsetHeight, pad = 16;
+    let x = event.clientX + pad, y = event.clientY + pad;
+    if (x + tw > window.innerWidth  - pad) x = event.clientX - tw - pad;
+    if (y + th > window.innerHeight - pad) y = event.clientY - th - pad;
+    tooltip.style.left = x+"px"; tooltip.style.top = y+"px";
+  }
 }
 
 function onTouchStart(event, d) {
